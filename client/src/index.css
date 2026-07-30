@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 { font-family: 'Playfair Display', Georgia, serif; }
+  input, textarea, button { font-family: 'Poppins', sans-serif; }
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #f97316, #dc2626); border-radius: 2px; }
+
+@keyframes firework {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-200px) scale(0); opacity: 0; }
+}
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+}
+@keyframes explode {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+}
+@keyframes burst {
+  0% { transform: rotate(0deg) translateY(0); opacity: 1; }
+  100% { transform: rotate(var(--r)) translateY(-120px); opacity: 0; }
+}
+@keyframes fadeSlide {
+  0% { opacity: 0; transform: translateX(30px); }
+  10% { opacity: 1; transform: translateX(0); }
+  85% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(-30px); }
+}
+@keyframes particle {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(var(--px), var(--py)) rotate(720deg) scale(0); opacity: 0; }
+}
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(249,115,22,0.3); }
+  50% { box-shadow: 0 0 20px rgba(249,115,22,0.6); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-firework { animation: firework 1.5s ease-out infinite; }
+.animate-sparkle { animation: sparkle 1s ease-in-out infinite; }
+.animate-explode { animation: explode 1s ease-out forwards; }
+.animate-burst { animation: burst 1s ease-out forwards; }
+.animate-fade-slide { animation: fadeSlide 5s ease-in-out infinite; }
+.animate-particle { animation: particle 1.2s ease-out forwards; }
+.animate-glow { animation: glow 2s ease-in-out infinite; }
+.animate-shimmer { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); background-size: 200% 100%; animation: shimmer 2s infinite; }
