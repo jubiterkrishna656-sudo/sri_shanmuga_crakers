@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiSparkles, HiStar, HiShoppingCart, HiArrowRight, HiFire, HiShieldCheck, HiTruck, HiBadgeCheck } from 'react-icons/hi';
+import { HiArrowRight, HiChevronLeft, HiChevronRight, HiFire, HiSparkles } from 'react-icons/hi';
 import { productAPI } from '../utils/api';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
+import { categories } from '../utils/categories';
+import { FREE_SHIPPING_THRESHOLD } from '../utils/constants';
+import ProductCard from '../components/ProductCard';
+import Seo from '../components/Seo';
 
 const slides = [
   {
     tag: '🎆 Diwali Special 2025',
     title: ['Light Up Your', 'Festival'],
-    desc: 'Premium quality crackers from Sri Shanmuga Crackers. Safe, vibrant, and affordable fireworks for every celebration.',
+    desc: 'Premium quality crackers from Sri Shanmuga Grand Crackers. Safe, vibrant, and affordable fireworks for every celebration.',
     cta: 'Shop Now', ctaLink: '/products',
     cta2: 'Gift Boxes', cta2Link: '/products?category=Gift%20Boxes',
-    gradient: 'from-violet-600 via-purple-600 to-pink-600',
-    bgImage: null,
+    gradient: 'from-violet-700 via-purple-700 to-fuchsia-600',
+    glow: 'bg-violet-400/30',
     icon: '🎆',
+    image: '/logo.png',
     badge: 'Premium Quality since 2026'
   },
   {
@@ -24,9 +27,10 @@ const slides = [
     desc: 'Limited period festival offers. Stock up on your favorites and save big this Diwali season!',
     cta: 'View Deals', ctaLink: '/products',
     cta2: 'Combo Packs', cta2Link: '/products?category=Combo%20Packs',
-    gradient: 'from-rose-600 via-red-600 to-orange-600',
-    bgImage: null,
+    gradient: 'from-rose-700 via-red-700 to-orange-600',
+    glow: 'bg-rose-400/30',
     icon: '💥',
+    image: null,
     badge: 'Limited Time Offer'
   },
   {
@@ -35,25 +39,16 @@ const slides = [
     desc: 'Brand new sparklers and crackers added. Explore the latest arrivals with exciting new designs!',
     cta: 'Explore', ctaLink: '/products',
     cta2: 'Kids Crackers', cta2Link: '/products?category=Kids%20Crackers',
-    gradient: 'from-emerald-600 via-teal-600 to-cyan-600',
-    bgImage: null,
+    gradient: 'from-emerald-700 via-teal-700 to-cyan-600',
+    glow: 'bg-emerald-400/30',
     icon: '🎇',
+    image: null,
     badge: 'Just Launched'
   }
 ];
 
-const categories = [
-  { name: 'Sparklers', emoji: '🎆', color: 'from-yellow-400 to-orange-500', shadow: 'shadow-yellow-500/30' },
-  { name: 'Flower Pots', emoji: '🎇', color: 'from-pink-400 to-rose-500', shadow: 'shadow-pink-500/30' },
-  { name: 'Rockets', emoji: '🚀', color: 'from-blue-400 to-indigo-500', shadow: 'shadow-blue-500/30' },
-  { name: 'Bombs', emoji: '💥', color: 'from-red-500 to-rose-600', shadow: 'shadow-red-500/30' },
-  { name: 'Gift Boxes', emoji: '🎁', color: 'from-green-400 to-emerald-500', shadow: 'shadow-green-500/30' },
-  { name: 'Kids Crackers', emoji: '🧨', color: 'from-cyan-400 to-sky-500', shadow: 'shadow-cyan-500/30' },
-  { name: 'Combo Packs', emoji: '📦', color: 'from-purple-400 to-violet-500', shadow: 'shadow-purple-500/30' }
-];
-
 const features = [
-  { icon: '🚚', title: 'Free Shipping', desc: 'On orders above ₹500', color: 'from-sky-400 to-blue-500' },
+  { icon: '🚚', title: 'Free Shipping', desc: `On orders above ₹${FREE_SHIPPING_THRESHOLD}`, color: 'from-sky-400 to-blue-500' },
   { icon: '🛡️', title: '100% Safe', desc: 'Certified quality products', color: 'from-green-400 to-emerald-500' },
   { icon: '💰', title: 'Best Price', desc: 'Factory direct prices', color: 'from-yellow-400 to-orange-500' },
   { icon: '🎉', title: 'Festive Offers', desc: 'Exciting deals & combos', color: 'from-pink-400 to-rose-500' }
@@ -68,26 +63,26 @@ const crackerColors = ['#ff6b35', '#ffd700', '#ff4500', '#ff8c00', '#ffdd57', '#
 
 function FirecrackerBurst({ index }) {
   const angle = (index * 137.5) % 360;
-  const distance = 40 + Math.random() * 160;
+  const distance = 50 + Math.random() * 190;
   const x = Math.cos((angle * Math.PI) / 180) * distance;
-  const y = Math.sin((angle * Math.PI) / 180) * distance - 50;
+  const y = Math.sin((angle * Math.PI) / 180) * distance - 60;
   const color = crackerColors[index % crackerColors.length];
 
   return (
     <motion.div
-      className="absolute w-1.5 h-1.5 rounded-full"
-      style={{ backgroundColor: color, boxShadow: `0 0 ${2 + Math.random() * 4}px ${color}` }}
+      className="absolute w-2 h-2 rounded-full"
+      style={{ backgroundColor: color, boxShadow: `0 0 ${4 + Math.random() * 6}px ${color}, 0 0 16px ${color}` }}
       initial={{ x: 0, y: 0, opacity: 0, scale: 0 }}
       animate={{
         x: [0, x, x * 0.7],
         y: [0, y, y * 0.9 + 10],
         opacity: [0, 1, 0.6, 0],
-        scale: [0, 1.5 + Math.random(), 0.2]
+        scale: [0, 1.8 + Math.random(), 0.2]
       }}
       transition={{
         duration: 1.2 + Math.random() * 0.8,
         repeat: Infinity,
-        repeatDelay: 0.5 + Math.random() * 2,
+        repeatDelay: 0.4 + Math.random() * 1.6,
         delay: Math.random() * 3,
         ease: 'easeOut'
       }}
@@ -182,14 +177,14 @@ function BigBloom({ index }) {
     >
       {[...Array(16)].map((_, i) => {
         const a = (i / 16) * 360;
-        const d = 40 + Math.random() * 30;
+        const d = 50 + Math.random() * 40;
         const x2 = Math.cos((a * Math.PI) / 180) * d;
         const y2 = Math.sin((a * Math.PI) / 180) * d;
         return (
           <motion.div
             key={i}
-            className="absolute w-2 h-2 rounded-full"
-            style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }}
+            className="absolute w-2.5 h-2.5 rounded-full"
+            style={{ backgroundColor: color, boxShadow: `0 0 10px ${color}, 0 0 20px ${color}` }}
             initial={{ x: 0, y: 0, opacity: 1 }}
             animate={{
               x: [0, x2, x2 * 0.5],
@@ -211,33 +206,66 @@ function BigBloom({ index }) {
   );
 }
 
-function GoldRain({ index }) {
-  const x = Math.random() * 100;
-  const delay = Math.random() * 8;
-  const size = 1 + Math.random() * 2;
+function SkyRocket({ index }) {
+  const left = 5 + Math.random() * 90;
+  const delay = Math.random() * 7;
+  const duration = 2.4 + Math.random() * 1.4;
+  const color = crackerColors[index % crackerColors.length];
+  const rise = (typeof window !== 'undefined' ? window.innerHeight : 800) * 1.15;
+  const drift = (Math.random() - 0.5) * 50;
+
   return (
     <motion.div
-      className="absolute w-1 h-2 rounded-full"
-      style={{
-        left: `${x}%`,
-        top: '-2%',
-        width: size,
-        height: size * 3,
-        backgroundColor: ['#ffd700', '#ffaa00', '#ffdd57', '#ff8c00'][index % 4],
-        boxShadow: `0 0 ${size * 4}px ${['#ffd700', '#ffaa00', '#ffdd57', '#ff8c00'][index % 4]}`
-      }}
+      className="absolute"
+      style={{ left: `${left}%`, bottom: '-6%' }}
       animate={{
-        y: ['0vh', '100vh'],
-        opacity: [0, 1, 0.8, 1, 0],
-        x: [0, (Math.random() - 0.5) * 20],
+        y: [0, -rise, -rise],
+        x: [0, drift, drift * 1.2],
+        opacity: [0, 1, 1, 0]
       }}
-      transition={{
-        duration: 3 + Math.random() * 4,
-        repeat: Infinity,
-        delay,
-        ease: 'linear'
-      }}
-    />
+      transition={{ duration, repeat: Infinity, delay, ease: 'easeIn' }}
+    >
+      <div className="relative flex items-end justify-center">
+        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 w-[3px] h-10 rounded-full"
+          style={{ background: `linear-gradient(to top, transparent 0%, ${color} 100%)`, boxShadow: `0 0 10px ${color}` }} />
+        <span className="relative w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 14px 4px ${color}` }} />
+      </div>
+    </motion.div>
+  );
+}
+
+function GroundFountain({ index }) {
+  const left = 8 + Math.random() * 84;
+  const delay = Math.random() * 5;
+  const color = crackerColors[index % crackerColors.length];
+
+  return (
+    <motion.div className="absolute" style={{ left: `${left}%`, bottom: '2%' }}>
+      <motion.div
+        className="relative mx-auto"
+        animate={{ opacity: [0, 1, 1, 0], scale: [0.8, 1, 1, 0.8] }}
+        transition={{ duration: 2.5, repeat: Infinity, delay, ease: 'easeInOut' }}
+      >
+        <span className="block w-2 h-6 rounded-full" style={{ background: color, boxShadow: `0 0 12px 2px ${color}` }} />
+        {[...Array(10)].map((_, i) => {
+          const spread = (i / 9 - 0.5) * 80;
+          const height = 30 + Math.random() * 40;
+          return (
+            <motion.span
+              key={i}
+              className="absolute w-1 h-1 rounded-full"
+              style={{ backgroundColor: color, left: '50%', bottom: 22, boxShadow: `0 0 6px ${color}` }}
+              animate={{
+                x: [0, spread, spread * 1.4],
+                y: [0, -height * 0.6, -height],
+                opacity: [1, 0.8, 0],
+              }}
+              transition={{ duration: 1.4 + Math.random() * 0.6, repeat: Infinity, delay: delay + Math.random() * 0.5, ease: 'easeOut' }}
+            />
+          );
+        })}
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -245,97 +273,97 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const { addToCart } = useCart();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    productAPI.getAll().then(res => {
-      setProducts(res.data);
+    productAPI.getAll({ page: 1, limit: 12 }).then(res => {
+      setProducts(res.data.products || res.data || []);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
 
   useEffect(() => {
+    if (paused) return;
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [paused]);
 
   const bestSellers = products.slice(0, 8);
-
-  const handleAdd = (id) => {
-    if (!user) { navigate('/register'); return; }
-    addToCart(id);
-  };
+  const slide = slides[currentSlide];
+  const go = (dir) => setCurrentSlide(prev => (prev + dir + slides.length) % slides.length);
 
   return (
     <div className="overflow-hidden">
+      <Seo />
       {/* ──────── HERO SLIDER ──────── */}
-      <section className={`relative bg-gradient-to-br ${slides[currentSlide].gradient} min-h-[85vh] flex items-center overflow-hidden`}>
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-white rounded-full blur-[100px]" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-yellow-300 rounded-full blur-[120px]" />
-          <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-pink-300 rounded-full blur-[80px]" />
+      <section
+        className={`relative bg-gradient-to-br ${slide.gradient} min-h-[88vh] flex items-center overflow-hidden`}
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        <div className="absolute inset-0 opacity-25">
+          <div className={`absolute top-10 left-10 w-80 h-80 ${slide.glow} rounded-full blur-[120px]`} />
+          <div className="absolute bottom-10 right-10 w-96 h-96 bg-yellow-300/30 rounded-full blur-[130px]" />
+          <div className="absolute top-1/2 left-1/3 w-56 h-56 bg-white/20 rounded-full blur-[90px]" />
         </div>
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute text-white/10 text-6xl"
-            style={{ top: `${15 + i * 15}%`, left: `${5 + i * 15}%` }}
-            animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-            transition={{ duration: 8 + i * 2, repeat: Infinity, ease: 'linear' }}
-          >✦</motion.div>
-        ))}
-        {/* Firecracker burst particles */}
+
+        {/* Firework particles */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {[...Array(40)].map((_, i) => (
-            <FirecrackerBurst key={`burst-${i}`} index={i} />
-          ))}
-          {[...Array(20)].map((_, i) => (
-            <TrailSpark key={`trail-${i}`} index={i} />
-          ))}
-          {[...Array(30)].map((_, i) => (
-            <SparkleParticle key={`sparkle-${i}`} index={i} />
-          ))}
-          {[...Array(4)].map((_, i) => (
-            <BigBloom key={`bloom-${i}`} index={i} />
-          ))}
-          {[...Array(15)].map((_, i) => (
-            <GoldRain key={`rain-${i}`} index={i} />
-          ))}
+          {[...Array(45)].map((_, i) => <FirecrackerBurst key={`burst-${i}`} index={i} />)}
+          {[...Array(14)].map((_, i) => <TrailSpark key={`trail-${i}`} index={i} />)}
+          {[...Array(35)].map((_, i) => <SparkleParticle key={`sparkle-${i}`} index={i} />)}
+          {[...Array(5)].map((_, i) => <BigBloom key={`bloom-${i}`} index={i} />)}
+          {[...Array(8)].map((_, i) => <SkyRocket key={`rocket-${i}`} index={i} />)}
+          {[...Array(5)].map((_, i) => <GroundFountain key={`fountain-${i}`} index={i} />)}
         </div>
+
+        {/* Slide arrows */}
+        <button
+          onClick={() => go(-1)}
+          className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/20 text-white transition-all"
+        >
+          <HiChevronLeft className="text-xl md:text-2xl" />
+        </button>
+        <button
+          onClick={() => go(1)}
+          className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-30 p-2 md:p-3 rounded-full bg-white/10 hover:bg-white/25 backdrop-blur-md border border-white/20 text-white transition-all"
+        >
+          <HiChevronRight className="text-xl md:text-2xl" />
+        </button>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 md:py-32 relative z-10 w-full">
-          <div className="grid md:grid-cols-2 gap-10 items-center">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div key={currentSlide} initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
               <motion.span
-                className="inline-block px-4 py-2 rounded-full bg-white/15 backdrop-blur-sm text-white text-sm font-medium mb-6"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white text-sm font-semibold mb-6 shadow-lg"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.15 }}
               >
-                {slides[currentSlide].tag}
+                {slide.tag}
               </motion.span>
-              <h1 className="text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
-                {slides[currentSlide].title[0]}<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-yellow-400">
-                  {slides[currentSlide].title[1]}
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-white leading-tight mb-6 drop-shadow-2xl">
+                {slide.title[0]}<br />
+                <span className="bg-gradient-to-r from-yellow-200 via-amber-300 to-orange-300 bg-clip-text text-transparent">
+                  {slide.title[1]}
                 </span>
               </h1>
-              <p className="text-white/80 text-lg md:text-xl mb-8 leading-relaxed max-w-lg">
-                {slides[currentSlide].desc}
+              <p className="text-white/85 text-base md:text-xl mb-8 leading-relaxed max-w-lg">
+                {slide.desc}
               </p>
-              <div className="flex flex-wrap gap-4">
-                <Link to={slides[currentSlide].ctaLink} className="group inline-flex items-center gap-2 bg-white text-green-900 px-8 py-3.5 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300">
-                  <span>{slides[currentSlide].cta}</span>
+              <div className="flex flex-wrap gap-3 md:gap-4">
+                <Link to={slide.ctaLink} className="group inline-flex items-center gap-2 bg-white text-gray-900 px-7 md:px-8 py-3.5 rounded-full font-bold text-base md:text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                  <span>{slide.cta}</span>
                   <HiArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link to={slides[currentSlide].cta2Link} className="inline-flex items-center gap-2 border-2 border-white/40 text-white px-8 py-3.5 rounded-full font-semibold text-lg hover:bg-white/10 hover:border-white/60 transition-all duration-300">
-                  {slides[currentSlide].cta2}
+                <Link to={slide.cta2Link} className="inline-flex items-center gap-2 border-2 border-white/40 bg-white/10 backdrop-blur-md text-white px-7 md:px-8 py-3.5 rounded-full font-semibold text-base md:text-lg hover:bg-white/20 hover:border-white/60 transition-all duration-300">
+                  {slide.cta2}
                 </Link>
               </div>
             </motion.div>
+
             <motion.div
               key={`img-${currentSlide}`}
               initial={{ opacity: 0, scale: 0.6 }}
@@ -344,14 +372,25 @@ export default function Home() {
               className="hidden md:flex justify-center"
             >
               <motion.div className="relative" {...floatAnim}>
-                <div className="w-72 h-72 md:w-96 md:h-96 bg-gradient-to-br from-yellow-300/30 to-orange-400/30 rounded-full blur-[80px] absolute -top-10 -left-10" />
-                <div className="relative bg-white/10 backdrop-blur-2xl rounded-[40px] p-10 border border-white/20 text-center shadow-2xl">
-                  <motion.span
-                    className="text-8xl md:text-9xl block"
-                    animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] }}
-                    transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                  >{slides[currentSlide].icon}</motion.span>
-                  <p className="text-white font-bold text-xl mt-6">{slides[currentSlide].badge}</p>
+                <div className={`w-80 h-80 lg:w-[28rem] lg:h-[28rem] ${slide.glow} rounded-full blur-[90px] absolute -top-10 -left-10`} />
+                <div className="relative bg-white/10 backdrop-blur-2xl rounded-[40px] p-5 md:p-8 border border-white/25 text-center shadow-2xl overflow-hidden">
+                  {slide.image ? (
+                    <motion.img
+                      src={slide.image}
+                      alt={slide.badge}
+                      className="max-w-full max-h-64 lg:max-h-[22rem] object-contain mx-auto drop-shadow-2xl"
+                      initial={{ opacity: 0, scale: 0.7 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.6, ease: 'easeOut' }}
+                    />
+                  ) : (
+                    <motion.span
+                      className="text-8xl md:text-9xl block"
+                      animate={{ rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                    >{slide.icon}</motion.span>
+                  )}
+                  <p className="text-white font-bold text-lg md:text-xl mt-6">{slide.badge}</p>
                   <div className="flex justify-center gap-1 mt-3">
                     {[...Array(5)].map((_, i) => (
                       <motion.span key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + i * 0.1 }} className="text-yellow-300 text-lg">★</motion.span>
@@ -362,6 +401,7 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
+
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3 z-20">
           {slides.map((_, i) => (
             <button key={i} onClick={() => setCurrentSlide(i)}
@@ -371,41 +411,37 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ──────── TICKER ──────── */}
+      <div className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 py-2.5 overflow-hidden">
+        <div className="flex whitespace-nowrap animate-[fadeSlide_1s_ease] justify-center gap-10 text-white text-sm font-semibold">
+          {['🔥 Up to 40% OFF on all crackers', '🚚 Free shipping above ₹500', '🛡️ Certified & 100% safe products', '🎁 Exciting combo packs', '📍 Sivakasi, Tamil Nadu'].map((t, i) => (
+            <span key={i} className="inline-flex items-center gap-2">{t}</span>
+          ))}
+        </div>
+      </div>
+
       {/* ──────── CATEGORIES ──────── */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-white to-orange-50/50">
+      <section className="py-14 md:py-20 bg-gradient-to-b from-white to-orange-50/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            className="text-center mb-12"
-          >
-            <span className="inline-block text-sm font-bold text-orange-500 tracking-[3px] uppercase mb-2">Categories</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-green-900">
-              Shop by <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">Category</span>
+          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-100px' }} className="text-center mb-10">
+            <span className="section-badge mb-3">Categories</span>
+            <h2 className="text-3xl md:text-5xl font-black text-gray-900 mt-2">
+              Shop by <span className="text-gradient">Category</span>
             </h2>
-            <p className="text-green-500 mt-3 text-lg">Find the perfect crackers for your celebration</p>
+            <p className="text-orange-500 mt-3 text-base md:text-lg">Find the perfect crackers for your celebration</p>
           </motion.div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
             {categories.map((cat, i) => (
-              <motion.div
-                key={cat.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
-              >
+              <motion.div key={cat.name} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}>
                 <Link to={`/products?category=${cat.name}`} className="block group">
                   <motion.div
-                    whileHover={{ y: -6, scale: 1.03 }}
-                    className={`bg-gradient-to-br ${cat.color} rounded-2xl p-5 text-center shadow-lg ${cat.shadow} hover:shadow-xl transition-all duration-300`}
+                    whileHover={{ y: -6, scale: 1.04 }}
+                    className={`bg-gradient-to-br ${cat.color} rounded-3xl p-5 text-center shadow-lg ${cat.shadow} hover:shadow-2xl transition-all duration-300`}
                   >
-                    <motion.div
-                      className="text-4xl mb-2 block"
-                      animate={{ rotate: [0, -10, 10, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
-                    >{cat.emoji}</motion.div>
-                    <p className="text-white font-bold text-sm">{cat.name}</p>
+                    <motion.div className="text-4xl mb-2 block" animate={{ rotate: [0, -10, 10, 0] }} transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}>
+                      {cat.emoji}
+                    </motion.div>
+                    <p className="text-white font-bold text-sm drop-shadow">{cat.name}</p>
                   </motion.div>
                 </Link>
               </motion.div>
@@ -415,29 +451,20 @@ export default function Home() {
       </section>
 
       {/* ──────── SALE BANNER ──────── */}
-      <section className="relative py-16 md:py-20 overflow-hidden">
+      <section className="relative py-14 md:py-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-700 via-pink-600 to-red-600" />
-        <motion.div
-          className="absolute inset-0 opacity-20"
-          animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-          style={{ background: 'radial-gradient(circle at 30% 50%, white 0%, transparent 50%), radial-gradient(circle at 70% 50%, white 0%, transparent 50%)', backgroundSize: '200% 200%' }}
-        />
+        <div className="absolute inset-0 opacity-15" style={{ background: 'radial-gradient(circle at 30% 50%, white 0%, transparent 50%), radial-gradient(circle at 70% 50%, white 0%, transparent 50%)' }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-          >
-            <motion.span
-              className="text-6xl block mb-4"
-              animate={{ rotate: [0, -10, 10, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >⚡</motion.span>
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-3">Diwali Mega Sale!</h2>
-            <p className="text-pink-200 text-xl md:text-2xl mb-8 font-light">Up to <span className="font-bold text-yellow-300">40% OFF</span> on all premium crackers. Limited period offer!</p>
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
+            <motion.span className="text-6xl block mb-4" animate={{ rotate: [0, -10, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+              ⚡
+            </motion.span>
+            <h2 className="text-4xl md:text-6xl font-black text-white mb-3 drop-shadow-lg">Diwali Mega Sale!</h2>
+            <p className="text-pink-100 text-xl md:text-2xl mb-8 font-light">
+              Up to <span className="font-black text-yellow-300">40% OFF</span> on all premium crackers. Limited period offer!
+            </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Link to="/products" className="inline-flex items-center gap-2 bg-yellow-400 text-purple-900 px-10 py-4 rounded-full font-bold text-lg hover:bg-yellow-300 shadow-2xl shadow-yellow-400/30 transition-all duration-300">
+              <Link to="/products" className="inline-flex items-center gap-2 bg-yellow-400 text-purple-900 px-10 py-4 rounded-full font-bold text-lg hover:bg-yellow-300 shadow-2xl shadow-yellow-400/40 transition-all duration-300">
                 <HiFire className="text-xl" />
                 Grab the Deal
               </Link>
@@ -447,7 +474,7 @@ export default function Home() {
       </section>
 
       {/* ──────── BEST SELLERS ──────── */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-orange-50/50 via-white to-white">
+      <section className="py-14 md:py-20 bg-gradient-to-b from-orange-50/60 via-white to-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -456,92 +483,25 @@ export default function Home() {
             className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4"
           >
             <div>
-              <span className="text-sm font-bold text-orange-500 tracking-[3px] uppercase">Best Sellers</span>
-              <h2 className="text-4xl md:text-5xl font-bold text-green-900 mt-1">
-                Most <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-500">Popular</span>
+              <span className="section-badge mb-2">Best Sellers</span>
+              <h2 className="text-3xl md:text-5xl font-black text-gray-900 mt-2">
+                Most <span className="text-gradient">Popular</span>
               </h2>
-              <p className="text-green-500 mt-2 text-lg">Top-rated crackers this season</p>
+              <p className="text-orange-500 mt-2 text-base md:text-lg">Top-rated crackers this season</p>
             </div>
-            <Link to="/products" className="group inline-flex items-center gap-1 text-orange-500 font-semibold hover:text-orange-600 transition-colors">
+            <Link to="/products" className="group inline-flex items-center gap-1 text-orange-500 font-bold hover:text-orange-600 transition-colors">
               <span>View All</span>
               <HiArrowRight className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
           {loading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[1,2,3,4].map(i => <div key={i} className="bg-white/80 rounded-3xl h-80 animate-pulse shadow-sm" />)}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+              {[1, 2, 3, 4].map(i => <div key={i} className="card h-80 animate-pulse" />)}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
               {bestSellers.map((product, i) => (
-                <motion.div
-                  key={product._id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                  transition={{ delay: i * 0.06 }}
-                  whileHover={{ y: -6 }}
-                  className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group"
-                >
-                  <Link to={`/products/${product._id}`}>
-                    <div className="relative h-48 bg-gradient-to-br from-orange-100 via-yellow-50 to-red-50 flex items-center justify-center overflow-hidden">
-                      {product.image || product.imageUrl ? (
-                        <img src={product.image || product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                      ) : (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                        >
-                          <HiSparkles className="text-6xl text-orange-300" />
-                        </motion.div>
-                      )}
-                      {product.discountPrice > 0 && (
-                        <motion.span
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          transition={{ type: 'spring' }}
-                          className="absolute top-3 left-3 bg-gradient-to-r from-red-500 to-rose-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg"
-                        >
-                          {Math.round((1 - product.discountPrice / product.price) * 100)}% OFF
-                        </motion.span>
-                      )}
-                    </div>
-                  </Link>
-                  <div className="p-4">
-                    <p className="text-xs text-orange-500 font-semibold mb-1 tracking-wide">{product.category}</p>
-                    <Link to={`/products/${product._id}`}>
-                      <h3 className="font-bold text-green-800 mb-2 truncate group-hover:text-orange-500 transition-colors">{product.name}</h3>
-                    </Link>
-                    <div className="flex items-center gap-1 mb-3">
-                      {[...Array(5)].map((_, s) => <HiStar key={s} className="text-yellow-400 text-xs" />)}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        {product.discountPrice > 0 ? (
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-orange-500 font-bold text-lg">₹{product.discountPrice}</span>
-                            <span className="text-green-400 text-sm line-through">₹{product.price}</span>
-                          </div>
-                        ) : (
-                          <span className="text-orange-500 font-bold text-lg">₹{product.price}</span>
-                        )}
-                      </div>
-                      <motion.button
-                        onClick={() => handleAdd(product._id)}
-                        disabled={product.stock <= 0}
-                        whileTap={{ scale: 0.9 }}
-                        className={`p-2.5 rounded-full transition-all duration-300 ${
-                          product.stock > 0
-                            ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-lg hover:shadow-orange-500/30'
-                            : 'bg-green-100 text-green-400 cursor-not-allowed'
-                        }`}
-                      >
-                        <HiShoppingCart className="text-lg" />
-                      </motion.button>
-                    </div>
-                    {product.stock <= 0 && <p className="text-red-500 text-xs mt-2 font-medium">Out of stock</p>}
-                  </div>
-                </motion.div>
+                <ProductCard key={product._id} product={product} index={i} />
               ))}
             </div>
           )}
@@ -549,20 +509,15 @@ export default function Home() {
       </section>
 
       {/* ──────── FEATURES ──────── */}
-      <section className="py-16 bg-green-900">
+      <section className="py-14 md:py-16 bg-gradient-to-br from-[#1a0b2e] via-[#2b0a3d] to-[#4a0d2e]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <span className="text-sm font-bold text-orange-400 tracking-[3px] uppercase">Why Choose Us</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mt-2">
-              We <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400">Promise</span>
+          <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-10">
+            <span className="chip bg-orange-500/15 text-orange-400 border border-orange-500/20 px-4 py-1.5 mb-3">Why Choose Us</span>
+            <h2 className="text-3xl md:text-5xl font-black text-white mt-2">
+              We <span className="text-gradient">Promise</span>
             </h2>
           </motion.div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
             {features.map((f, i) => (
               <motion.div
                 key={i}
@@ -571,17 +526,13 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
                 whileHover={{ y: -5 }}
-                className="bg-green-800/50 backdrop-blur-sm rounded-2xl p-6 text-center border border-green-700/50 hover:border-orange-500/30 transition-all duration-300"
+                className="bg-white/5 backdrop-blur-sm rounded-3xl p-6 text-center border border-white/10 hover:border-orange-500/40 transition-all duration-300"
               >
-                <motion.div
-                  className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-2xl shadow-lg`}
-                  animate={{ rotate: [0, 5, -5, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, delay: i * 0.2 }}
-                >
+                <motion.div className={`w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${f.color} flex items-center justify-center text-2xl shadow-lg`} animate={{ rotate: [0, 5, -5, 0] }} transition={{ duration: 3, repeat: Infinity, delay: i * 0.2 }}>
                   {f.icon}
                 </motion.div>
                 <h3 className="font-bold text-white text-lg mb-1">{f.title}</h3>
-                <p className="text-green-400 text-sm">{f.desc}</p>
+                <p className="text-white/50 text-sm">{f.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -589,20 +540,11 @@ export default function Home() {
       </section>
 
       {/* ──────── CTA ──────── */}
-      <section className="relative py-16 md:py-20 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 overflow-hidden">
-        <motion.div
-          className="absolute inset-0 opacity-10"
-          animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
-          transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-          style={{ background: 'radial-gradient(circle at 50% 50%, white 0%, transparent 60%)', backgroundSize: '200% 200%' }}
-        />
+      <section className="relative py-14 md:py-20 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ background: 'radial-gradient(circle at 50% 50%, white 0%, transparent 60%)' }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">Ready to Light Up Your Festival?</h2>
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4 drop-shadow-lg">Ready to Light Up Your Festival?</h2>
             <p className="text-orange-100 text-lg md:text-xl mb-8 max-w-2xl mx-auto">Browse our collection of premium crackers and sparklers. Safe delivery across India.</p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link to="/products" className="inline-flex items-center gap-2 bg-white text-orange-600 px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl transition-all duration-300">

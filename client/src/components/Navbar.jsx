@@ -1,195 +1,267 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiMenu, HiX, HiShoppingCart, HiLogout } from 'react-icons/hi';
-import toast from 'react-hot-toast';
-import { useAuth } from '../context/AuthContext';
+import { HiMenu, HiX, HiShoppingCart, HiHome, HiClipboardList, HiSearch, HiSparkles, HiTruck, HiFire } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 
-const links = [
-  { to: '/', label: 'Home' },
-  { to: '/products', label: 'Products' },
+const messages = [
+  { icon: HiSparkles, text: 'Deepavali Special: Flat 20% OFF on all Gift Boxes' },
+  { icon: HiTruck, text: 'Free Delivery Across Tamil Nadu on orders above Rs.2500' },
+  { icon: HiFire, text: 'Premium Quality & Safety Certified Crackers' },
 ];
+
+const linkBase = 'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300';
+const linkActive = 'text-amber-300 bg-white/10';
+const linkIdle = 'text-slate-300 hover:text-white hover:bg-white/5';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user, logout } = useAuth();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [search, setSearch] = useState('');
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 30);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleLogout = () => { logout(); toast.success('Logged out successfully'); navigate('/'); };
+
+  useEffect(() => {
+    setOpen(false);
+    setSearchOpen(false);
+    setSearch('');
+  }, [location.pathname, location.search]);
+
   const isActive = (path) => location.pathname === path;
 
+  const submitSearch = (e) => {
+    e.preventDefault();
+    const q = search.trim();
+    navigate(q ? `/products?search=${encodeURIComponent(q)}` : '/products');
+    setSearch('');
+    setSearchOpen(false);
+  };
+
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-black/90 backdrop-blur-xl shadow-lg shadow-black/20'
-          : 'bg-black/60 backdrop-blur-md'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group relative">
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30 group-hover:shadow-orange-500/50 transition-all duration-300 group-hover:scale-105">
-              <span className="text-white text-lg md:text-xl font-black">S</span>
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-sm md:text-base font-black tracking-tight text-white drop-shadow-lg font-family-heading">
-                Sri Shanmuga
+    <header className="sticky top-0 z-50">
+      {/* Announcement ticker */}
+      <div className="relative h-9 md:h-10 overflow-hidden bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 flex items-center">
+        <motion.div
+          className="flex items-center whitespace-nowrap"
+          animate={{ x: ['0%', '-50%'] }}
+          transition={{ x: { duration: 25, ease: 'linear', repeat: Infinity } }}
+        >
+          {[...messages, ...messages].map((m, i) => {
+            const M = m.icon;
+            return (
+              <span key={i} className="flex items-center gap-2 px-6 md:px-8 text-[11px] md:text-xs font-bold uppercase tracking-wider text-amber-950">
+                <M className="text-sm text-amber-950 shrink-0" />
+                {m.text}
               </span>
-              <span className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-orange-300">
-                Crackers
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop */}
-          <div className="hidden md:flex items-center">
-            <div className="flex items-center rounded-full p-1 bg-white/10 backdrop-blur-md border border-white/20">
-              {links.map(link => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 ${
-                    isActive(link.to)
-                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md'
-                      : 'text-green-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {user && (
-                <Link
-                  to="/orders"
-                  className={`px-5 py-2 rounded-full text-sm font-semibold tracking-wide transition-all duration-300 ${
-                    isActive('/orders')
-                      ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md'
-                      : 'text-green-300 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  Orders
-                </Link>
-              )}
-            </div>
-
-            {user && (
-              <div className="flex items-center ml-4 rounded-full p-1 bg-white/10 backdrop-blur-md border border-white/20">
-                <Link to="/cart" className="relative p-2.5 text-green-200 hover:text-white transition-colors">
-                  <HiShoppingCart className="text-xl" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg bg-orange-500 text-white">
-                      {cartCount}
-                    </span>
-                  )}
-                </Link>
-                <Link to="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all duration-300 hover:bg-white/10">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-red-500">
-                    <span className="text-xs font-bold text-white">{user?.name?.charAt(0)?.toUpperCase()}</span>
-                  </div>
-                  <span className="text-sm font-medium text-green-100 hidden lg:block">{user?.name?.split(' ')[0]}</span>
-                </Link>
-                <button onClick={handleLogout} className="p-2.5 transition-colors ml-1 text-green-500 hover:text-red-400" title="Logout">
-                  <HiLogout className="text-lg" />
-                </button>
-              </div>
-            )}
-
-            {!user && (
-              <div className="flex items-center space-x-2.5 ml-5">
-                <Link
-                  to="/login"
-                  className="px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 text-green-200 border border-white/30 hover:bg-white/10 hover:border-white/60"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 shadow-lg bg-gradient-to-r from-orange-500 to-red-500 text-white hover:shadow-xl"
-                >
-                  Register
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Mobile */}
-          <div className="md:hidden flex items-center space-x-2">
-            {user && (
-              <Link to="/cart" className="relative p-2 text-green-200">
-                <HiShoppingCart className="text-xl" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold bg-orange-500 text-white">{cartCount}</span>
-                )}
-              </Link>
-            )}
-            <button onClick={() => setOpen(!open)} className="p-2 text-green-200 hover:text-white transition-colors">
-              {open ? <HiX className="text-2xl" /> : <HiMenu className="text-2xl" />}
-            </button>
-          </div>
-        </div>
+            );
+          })}
+        </motion.div>
       </div>
 
+      {/* Main nav */}
+      <nav className={`relative bg-slate-950/95 backdrop-blur-xl transition-all duration-300 ${scrolled ? 'shadow-2xl shadow-black/40 border-b border-white/10' : 'border-b border-white/5'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16 md:h-20">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+              <motion.div
+                animate={{ rotate: [0, 6, -6, 0], scale: [1, 1.06, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1.5 }}
+                className="h-14 md:h-16 overflow-hidden rounded-xl ring-1 ring-white/10 shadow-lg shadow-black/20 group-hover:shadow-amber-500/20 transition-all duration-300"
+              >
+                <motion.img
+                  src="/logo.png"
+                  alt="Sri Shanmuga Grand Crackers"
+                  className="h-full w-auto object-contain"
+                  animate={{ rotate: [0, -4, 4, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
+                />
+              </motion.div>
+              <div className="flex flex-col leading-tight">
+                <span className="text-lg md:text-xl font-black tracking-tight text-white">
+                  Sri Shanmuga
+                </span>
+                <span className="text-[11px] md:text-xs font-black tracking-[0.25em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-yellow-400">
+                  Grand Crackers
+                </span>
+              </div>
+            </Link>
+
+            {/* Desktop links */}
+            <div className="hidden md:flex items-center gap-1">
+              <Link to="/" className={`${linkBase} ${isActive('/') ? linkActive : linkIdle}`}>
+                <HiHome className="text-base text-amber-400" />
+                Home
+              </Link>
+
+              <Link to="/products" className={`${linkBase} ${location.pathname.startsWith('/products') ? linkActive : linkIdle}`}>
+                <HiFire className="text-base text-amber-400" />
+                Products
+              </Link>
+
+              <Link to="/orders" className={`${linkBase} ${isActive('/orders') ? linkActive : linkIdle}`}>
+                <HiClipboardList className="text-base text-amber-400" />
+                Orders
+              </Link>
+            </div>
+
+            {/* Right side */}
+            <div className="hidden md:flex items-center gap-1.5">
+              <motion.div
+                animate={{ width: searchOpen ? 220 : 0, opacity: searchOpen ? 1 : 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <form onSubmit={submitSearch} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 focus-within:border-amber-400/60 transition-colors">
+                  <HiSearch className="text-amber-400 shrink-0" />
+                  <input
+                    autoFocus={searchOpen}
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    placeholder="Search crackers..."
+                    className="bg-transparent w-full py-2 text-sm text-white placeholder-slate-500 outline-none"
+                  />
+                  {search && (
+                    <button type="button" onClick={() => setSearch('')} className="text-slate-500 hover:text-white">
+                      <HiX className="text-sm" />
+                    </button>
+                  )}
+                </form>
+              </motion.div>
+              <button
+                onClick={() => setSearchOpen(!searchOpen)}
+                className={`p-2.5 rounded-full transition-all ${searchOpen ? 'text-amber-300 bg-white/10' : 'text-slate-300 hover:text-amber-300 hover:bg-white/5'}`}
+                title="Search"
+              >
+                <HiSearch className="text-xl" />
+              </button>
+
+              <Link to="/cart" className="relative p-2.5 rounded-full text-slate-300 hover:text-amber-300 hover:bg-white/5 transition-all" title="Cart">
+                <HiShoppingCart className="text-xl" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-950 bg-gradient-to-br from-amber-400 to-yellow-500 shadow-md shadow-amber-500/40">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+            </div>
+
+            {/* Mobile controls */}
+            <div className="md:hidden flex items-center gap-1">
+              <Link to="/cart" className="relative p-2 text-slate-300">
+                <HiShoppingCart className="text-2xl" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-950 bg-gradient-to-br from-amber-400 to-yellow-500 shadow-md">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+              <button
+                onClick={() => setOpen(!open)}
+                className={`p-2 rounded-2xl transition-all ${open ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-lg shadow-amber-500/30' : 'text-slate-300 hover:bg-white/5'}`}
+              >
+                {open ? <HiX className="text-2xl" /> : <HiMenu className="text-2xl" />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile menu */}
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden border-t overflow-hidden bg-black/90 backdrop-blur-2xl border-white/10"
+            className="md:hidden overflow-hidden bg-slate-950/98 backdrop-blur-xl border-t border-white/10 shadow-2xl"
           >
-            <div className="px-4 py-4 space-y-1">
-              {links.map(link => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  onClick={() => setOpen(false)}
-                  className={`block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                    isActive(link.to)
-                      ? 'bg-white/20 text-white border-l-2 border-white'
-                      : 'text-green-400 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {user ? (
-                <>
-                  <Link to="/orders" onClick={() => setOpen(false)} className={`block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                    isActive('/orders')
-                      ? 'bg-white/20 text-white border-l-2 border-white'
-                      : 'text-green-400 hover:text-white hover:bg-white/10'
-                  }`}>Orders</Link>
-                  <Link to="/profile" onClick={() => setOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-green-400 hover:text-white hover:bg-white/10">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-orange-400 to-red-500">
-                      <span className="text-sm font-bold text-white">{user?.name?.charAt(0)?.toUpperCase()}</span>
-                    </div>
-                    {user?.name}
-                  </Link>
-                  <button onClick={() => { handleLogout(); setOpen(false); }} className="block w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition-all text-green-600 hover:text-red-400 hover:bg-white/10">Logout</button>
-                </>
-              ) : (
-                <>
-                  <Link to="/login" onClick={() => setOpen(false)} className="block px-4 py-3 rounded-xl text-sm font-semibold transition-all text-green-400 hover:text-white hover:bg-white/10">Login</Link>
-                  <div className="px-4 pt-2">
-                    <Link to="/register" onClick={() => setOpen(false)} className="block w-full py-3 rounded-xl text-sm font-bold text-center shadow-lg bg-gradient-to-r from-orange-500 to-red-500 text-white">Register ✦</Link>
-                  </div>
-                </>
-              )}
+            <div className="px-4 py-5 space-y-2">
+              <form onSubmit={submitSearch} className="flex items-center gap-2 bg-white rounded-2xl px-3 mb-2 border-2 border-transparent focus-within:border-amber-400 shadow-lg shadow-amber-500/10 transition-colors">
+                <HiSearch className="text-amber-600 text-lg shrink-0" />
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Search crackers..."
+                  className="bg-transparent w-full py-3 text-sm font-bold text-slate-900 placeholder-slate-400 outline-none"
+                />
+              </form>
+
+              <Link
+                to="/"
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-black tracking-wide transition-all ${
+                  isActive('/')
+                    ? 'bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 text-slate-950 ring-2 ring-white/70 shadow-lg shadow-amber-500/40'
+                    : 'bg-gradient-to-r from-amber-400/90 to-orange-500/90 text-white ring-1 ring-amber-300/50 shadow-md shadow-amber-500/25'
+                }`}
+              >
+                <span className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isActive('/') ? 'bg-slate-950/10 text-slate-950' : 'bg-white/25 text-white'}`}>
+                  <HiHome className="text-xl" />
+                </span>
+                Home
+              </Link>
+
+              <Link
+                to="/products"
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-black tracking-wide transition-all ${
+                  location.pathname.startsWith('/products')
+                    ? 'bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 text-white ring-2 ring-white/70 shadow-lg shadow-orange-500/40'
+                    : 'bg-gradient-to-r from-orange-400/90 to-red-500/90 text-white ring-1 ring-orange-300/50 shadow-md shadow-orange-500/25'
+                }`}
+              >
+                <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/25 text-white">
+                  <HiFire className="text-xl" />
+                </span>
+                Products
+              </Link>
+
+              <Link
+                to="/orders"
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-black tracking-wide transition-all ${
+                  isActive('/orders')
+                    ? 'bg-gradient-to-r from-violet-400 to-indigo-500 text-white ring-2 ring-white/70 shadow-lg shadow-violet-500/40'
+                    : 'bg-gradient-to-r from-violet-400/90 to-indigo-500/90 text-white ring-1 ring-violet-300/50 shadow-md shadow-violet-500/25'
+                }`}
+              >
+                <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/25 text-white">
+                  <HiClipboardList className="text-xl" />
+                </span>
+                Track Order
+              </Link>
+
+              <Link
+                to="/cart"
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-black tracking-wide transition-all ${
+                  isActive('/cart')
+                    ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-950 ring-2 ring-white/70 shadow-lg shadow-amber-500/40'
+                    : 'bg-gradient-to-r from-yellow-400/90 to-amber-500/90 text-white ring-1 ring-amber-300/50 shadow-md shadow-amber-500/25'
+                }`}
+              >
+                <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-white/25 text-white">
+                  <HiShoppingCart className="text-xl" />
+                </span>
+                Cart
+                {cartCount > 0 && (
+                  <span className="ml-auto text-xs font-bold bg-white/25 px-2 py-0.5 rounded-full">{cartCount}</span>
+                )}
+              </Link>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </header>
   );
 }
