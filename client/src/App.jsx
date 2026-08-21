@@ -16,6 +16,7 @@ import AdminDashboard from './admin/AdminDashboard';
 import AdminProducts from './admin/AdminProducts';
 import AdminOrders from './admin/AdminOrders';
 import AdminReports from './admin/AdminReports';
+import AdminCategories from './admin/AdminCategories';
 import AdminLayout from './admin/AdminLayout';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="orders" element={<AdminOrders />} />
+          <Route path="categories" element={<AdminCategories />} />
           <Route path="reports" element={<AdminReports />} />
         </Route>
         <Route element={<><Navbar /><main className="min-h-screen"><Outlet /></main><Footer /><FloatingCallButton /></>}>

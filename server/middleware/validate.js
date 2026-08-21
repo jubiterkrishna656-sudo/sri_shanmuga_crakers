@@ -47,6 +47,7 @@ const productUpdateRules = [
 const placeOrderRules = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('phone').matches(/^[0-9]{10}$/).withMessage('Valid 10-digit phone number is required'),
+  body('email').optional().isEmail().withMessage('Valid email address is required'),
   body('address').trim().notEmpty().withMessage('Delivery address is required'),
   handleValidation
 ];

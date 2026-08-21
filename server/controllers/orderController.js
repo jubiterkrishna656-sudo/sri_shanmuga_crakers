@@ -1,7 +1,18 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const Counter = require('../models/Counter');
 const cache = require('../utils/cache');
 const { MIN_ORDER_AMOUNT } = require('../utils/constants');
+const { getAdminNewOrderUrl, getCustomerThanksUrl } = require('../utils/whatsapp');
+
+async function getNextOrderNumber() {
+  const counter = await Counter.findOneAndUpdate(
+    { _id: 'orderNumber' },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  return `SC${String(counter.seq).padStart(3, '0')}`;
+}
 
 const ORDER_FLOW = {
   pending: ['payment_verification', 'confirmed', 'cancelled'],
@@ -76,7 +87,10 @@ exports.placeOrder = async (req, res) => {
       deducted.push({ id: item.productId, qty: item.quantity });
     }
 
+    const orderNumber = await getNextOrderNumber();
+
     const order = await Order.create({
+      orderNumber,
       userId: req.userId || undefined,
       products: orderProducts,
       totalAmount,
@@ -91,7 +105,11 @@ exports.placeOrder = async (req, res) => {
 
     orderProducts.forEach(p => cache.del(`product:${p.productId}`));
     cache.del('products:');
-    res.status(201).json(order);
+
+    const adminWhatsAppUrl = getAdminNewOrderUrl(order);
+    console.log(`[whatsapp] New order ${orderNumber} — Admin notification: ${adminWhatsAppUrl}`);
+
+    res.status(201).json({ ...order.toObject(), adminWhatsAppUrl });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -99,7 +117,7 @@ exports.placeOrder = async (req, res) => {
 
 // Fields safe to expose to guests looking up orders by phone number.
 // Deliberately excludes sensitive data (address, transactionId, history).
-const PUBLIC_ORDER_FIELDS = ['_id', 'products', 'totalAmount', 'customerName', 'customerPhone', 'paymentStatus', 'orderStatus', 'stockRestored', 'createdAt'];
+const PUBLIC_ORDER_FIELDS = ['_id', 'orderNumber', 'products', 'totalAmount', 'customerName', 'customerPhone', 'paymentStatus', 'orderStatus', 'stockRestored', 'createdAt'];
 
 exports.getOrdersByPhone = async (req, res) => {
   try {
@@ -135,7 +153,12 @@ exports.getMyOrders = async (req, res) => {
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().populate('userId', 'name email phone').sort({ createdAt: -1 });
-    res.json(orders);
+    const withWhatsApp = orders.map(o => {
+      const obj = o.toObject();
+      obj.adminWhatsAppUrl = getAdminNewOrderUrl(obj);
+      return obj;
+    });
+    res.json(withWhatsApp);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -198,6 +221,15 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     const updated = await Order.findByIdAndUpdate(req.params.id, update, { new: true });
+
+    if (changes.length > 0) {
+      const thanksUrl = getCustomerThanksUrl(updated);
+      if (thanksUrl) {
+        console.log(`[whatsapp] Order ${updated.orderNumber || String(updated._id).slice(-8).toUpperCase()} — Customer thanks: ${thanksUrl}`);
+        updated._doc.customerWhatsAppUrl = thanksUrl;
+      }
+    }
+
     res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -206,3 +238,25 @@ exports.updateOrderStatus = async (req, res) => {
 
 exports.ORDER_FLOW = ORDER_FLOW;
 exports.PAYMENT_FLOW = PAYMENT_FLOW;
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ error: 'Order not found' });
+
+    if (!['delivered', 'cancelled'].includes(order.orderStatus) && !order.stockRestored) {
+      for (const item of order.products) {
+        if (item.productId) {
+          await Product.findByIdAndUpdate(item.productId, { $inc: { stock: item.quantity } });
+          cache.del(`product:${item.productId}`);
+        }
+      }
+      cache.del('products:');
+    }
+
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Order deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

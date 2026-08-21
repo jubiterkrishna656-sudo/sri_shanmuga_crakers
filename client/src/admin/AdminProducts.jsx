@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { HiPencil, HiTrash, HiX, HiCube, HiPlusCircle, HiStar, HiSparkles } from 'react-icons/hi';
+import { HiPencil, HiTrash, HiX, HiCube, HiPlusCircle, HiStar, HiSparkles, HiGlobeAlt, HiDatabase } from 'react-icons/hi';
 import toast from 'react-hot-toast';
-import { productAPI } from '../utils/api';
 import { adminApi } from '../utils/adminApi';
 
 const defaultCategories = ['Sparklers', 'Flower Pots', 'Rockets', 'Bombs', 'Gift Boxes', 'Kids Crackers', 'Combo Packs'];
@@ -15,17 +14,28 @@ export default function AdminProducts() {
   const [form, setForm] = useState({ productNumber: '', name: '', category: 'Sparklers', price: '', discountPrice: '', stock: '', description: '', featured: false, imageUrl: '', videoUrl: '' });
   const [image, setImage] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [extraCategories, setExtraCategories] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('admin_categories') || '[]'); } catch { return []; }
-  });
+  const [serverCategories, setServerCategories] = useState([]);
   const [showNewCatInput, setShowNewCatInput] = useState(false);
   const [newCategory, setNewCategory] = useState('');
-  const allCategories = [...new Set([...defaultCategories, ...extraCategories])];
+  const allCategories = [...new Set([...defaultCategories, ...serverCategories.map(c => c.name || c)])];
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => {
+    fetchProducts();
+    fetchServerCategories();
+  }, []);
+
+  const fetchServerCategories = () => {
+    adminApi.getCategories().then(res => {
+      setServerCategories(res.data || []);
+    }).catch(() => {});
+  };
 
   const fetchProducts = () => {
-    productAPI.getAll().then(res => { setProducts(res.data); setLoading(false); });
+    adminApi.getAllProducts({ source: 'local' }).then(res => {
+      const data = res.data;
+      setProducts(Array.isArray(data) ? data : data.products || []);
+      setLoading(false);
+    }).catch(() => { setLoading(false); });
   };
 
   const openCreate = () => {
@@ -46,17 +56,25 @@ export default function AdminProducts() {
     setShowForm(true);
   };
 
-  const addCategory = () => {
+  const addCategory = async () => {
     const cat = newCategory.trim();
     if (!cat) return;
     if (allCategories.includes(cat)) { toast('Category already exists'); return; }
-    const updated = [...extraCategories, cat];
-    setExtraCategories(updated);
-    localStorage.setItem('admin_categories', JSON.stringify(updated));
-    setForm({ ...form, category: cat });
-    setShowNewCatInput(false);
-    setNewCategory('');
-    toast.success(`Category "${cat}" added`);
+    try {
+      const emojis = ['🎆', '🎇', '🚀', '💥', '🎁', '🧨', '📦', '🔥', '✨', '⭐'];
+      await adminApi.createCategory({
+        name: cat,
+        emoji: emojis[serverCategories.length % emojis.length],
+        color: 'from-purple-400 to-violet-500'
+      });
+      await fetchServerCategories();
+      setForm({ ...form, category: cat });
+      setShowNewCatInput(false);
+      setNewCategory('');
+      toast.success(`Category "${cat}" added`);
+    } catch {
+      toast.error('Failed to add category');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -105,7 +123,7 @@ export default function AdminProducts() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
           <motion.div initial={{ opacity: 0, scale: 0.92, y: 30 }} animate={{ opacity: 1, scale: 1, y: 0 }}
             className="w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-3xl p-[1.5px] bg-gradient-to-br from-cyan-400 via-fuchsia-500 to-amber-400 shadow-2xl shadow-fuchsia-500/10" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-b from-slate-900 to-slate-950 rounded-[calc(1.5rem-1.5px)] overflow-hidden">
@@ -302,6 +320,16 @@ export default function AdminProducts() {
                     <div className="flex items-center gap-1.5">
                       <p className="font-black text-white text-sm truncate">{p.name}</p>
                       {p.featured && <span className="text-[9px] font-bold text-amber-400 bg-amber-500/15 px-1 rounded-full shrink-0">★</span>}
+                      {p.source === 'django' && (
+                        <span className="text-[9px] font-black text-blue-300 bg-blue-500/20 px-1.5 py-0.5 rounded-full shrink-0 flex items-center gap-0.5">
+                          <HiGlobeAlt className="text-[8px]" /> Django
+                        </span>
+                      )}
+                      {p.source === 'local' && (
+                        <span className="text-[9px] font-black text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded-full shrink-0 flex items-center gap-0.5">
+                          <HiDatabase className="text-[8px]" /> Local
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                       <span className="text-[11px] font-black text-cyan-300 font-mono">{p.productNumber || String(i + 1).padStart(3, '0')}</span>
@@ -366,12 +394,18 @@ export default function AdminProducts() {
                 {/* Actions */}
                 <div className="col-span-2 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <button onClick={() => openEdit(p)} className="px-3 py-1.5 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-xl font-black text-xs shadow-lg shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40 hover:scale-105 transition-all flex items-center gap-1" title="Edit">
-                      <HiPencil className="text-xs" /> Edit
-                    </button>
-                    <button onClick={() => handleDelete(p._id)} className="px-3 py-1.5 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-black text-xs shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:scale-105 transition-all flex items-center gap-1" title="Delete">
-                      <HiTrash className="text-xs" /> Del
-                    </button>
+                    {p.source !== 'django' ? (
+                      <>
+                        <button onClick={() => openEdit(p)} className="px-3 py-1.5 bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white rounded-xl font-black text-xs shadow-lg shadow-fuchsia-500/20 hover:shadow-fuchsia-500/40 hover:scale-105 transition-all flex items-center gap-1" title="Edit">
+                          <HiPencil className="text-xs" /> Edit
+                        </button>
+                        <button onClick={() => handleDelete(p._id)} className="px-3 py-1.5 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-black text-xs shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:scale-105 transition-all flex items-center gap-1" title="Delete">
+                          <HiTrash className="text-xs" /> Del
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-500 italic">Read-only (Django)</span>
+                    )}
                   </div>
                 </div>
               </div>

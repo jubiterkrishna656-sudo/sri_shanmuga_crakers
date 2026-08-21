@@ -66,8 +66,14 @@ test('placeOrderRules requires an address', async () => {
 });
 
 test('placeOrderRules accepts a valid payload', async () => {
-  const state = await runChain(placeOrderRules, { name: 'Test', phone: '9876543210', address: '1 Test St' });
+  const state = await runChain(placeOrderRules, { name: 'Test', phone: '9876543210', email: 'test@example.com', address: '1 Test St' });
   assert.strictEqual(state.statusCode, null);
+});
+
+test('placeOrderRules requires a valid email', async () => {
+  const state = await runChain(placeOrderRules, { name: 'Test', phone: '9876543210', email: 'not-an-email', address: '1 Test St' });
+  assert.strictEqual(state.statusCode, 400);
+  assert.match(state.jsonBody.error, /email/i);
 });
 
 test('placeOrderRules requires a name', async () => {

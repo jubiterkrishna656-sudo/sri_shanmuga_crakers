@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const Category = require('../models/Category');
 const Review = require('../models/Review');
 const Counter = require('../models/Counter');
 const fs = require('fs');
@@ -33,6 +34,7 @@ async function getNextProductNumber() {
 
 async function withReviewStats(products) {
   if (!products.length) return products;
+
   const ids = products.map(p => p._id);
   const stats = await Review.aggregate([
     { $match: { productId: { $in: ids } } },
@@ -69,39 +71,55 @@ exports.getProducts = async (req, res) => {
     const cached = cache.get(cacheKey);
     if (cached) return res.json(cached);
 
-    let filter = {};
+    const isTextSearch = !!search;
+    const filter = {};
     if (category && category !== 'all') filter.category = category;
-    if (search) filter.name = { $regex: search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), $options: 'i' };
+    if (search) filter.$text = { $search: search };
 
-    let result;
+    const sort = isTextSearch ? { score: { $meta: 'textScore' } } : { createdAt: -1 };
+    const projection = isTextSearch ? { score: { $meta: 'textScore' } } : undefined;
+
+    let products = await Product.find(filter, projection).sort(sort);
+    if (category && category !== 'all') {
+      products = products.filter(p => p.category === category);
+    }
+
+    let markedProducts = products.map(p => {
+      const doc = p.toObject ? p.toObject() : p;
+      return { ...doc, source: 'local' };
+    });
+
+    if (search && !isTextSearch) {
+      const q = search.toLowerCase();
+      markedProducts = markedProducts.filter(p =>
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q)
+      );
+    }
+
+    const withStats = await withReviewStats(markedProducts);
+
     if (page) {
       const pageNum = Math.max(1, parseInt(page));
       const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
-      const skip = (pageNum - 1) * limitNum;
+      const start = (pageNum - 1) * limitNum;
+      const paged = withStats.slice(start, start + limitNum);
 
-      const [products, total] = await Promise.all([
-        Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
-        Product.countDocuments(filter)
-      ]);
-
-      const withStats = await withReviewStats(products);
-
-      result = {
-        products: withStats,
+      const result = {
+        products: paged,
         pagination: {
           page: pageNum,
           limit: limitNum,
-          total,
-          pages: Math.ceil(total / limitNum)
+          total: withStats.length,
+          pages: Math.ceil(withStats.length / limitNum)
         }
       };
-    } else {
-      const products = await Product.find(filter).sort({ createdAt: -1 });
-      result = await withReviewStats(products);
+      cache.set(cacheKey, result);
+      return res.json(result);
     }
 
-    cache.set(cacheKey, result);
-    res.json(result);
+    cache.set(cacheKey, withStats);
+    res.json(withStats);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -109,11 +127,12 @@ exports.getProducts = async (req, res) => {
 
 exports.getProduct = async (req, res) => {
   try {
-    const cacheKey = `product:${req.params.id}`;
+    const { id } = req.params;
+    const cacheKey = `product:${id}`;
     const cached = cache.get(cacheKey);
     if (cached) return res.json(cached);
 
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(id);
     if (!product) return res.status(404).json({ error: 'Product not found' });
     const [withStats] = await withReviewStats([product]);
     cache.set(cacheKey, withStats);
@@ -131,6 +150,7 @@ exports.createProduct = async (req, res) => {
     const product = await Product.create({ productNumber: num, name, category, image, imageUrl, videoUrl, price, discountPrice, stock, description });
     cache.del('products:');
     cache.del('categories');
+
     res.status(201).json(product);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -192,9 +212,28 @@ exports.getCategories = async (req, res) => {
   try {
     const cached = cache.get('categories');
     if (cached) return res.json(cached);
-    const categories = await Product.distinct('category');
-    cache.set('categories', categories, 60000);
-    res.json(categories);
+
+    const localCategoryNames = await Product.distinct('category');
+
+    const merged = localCategoryNames.map(name => ({ name, emoji: '🎆', color: 'from-yellow-400 to-orange-500', source: 'local' }));
+
+    const managedCategories = await Category.find().sort({ order: 1, name: 1 }).select('name emoji color');
+    const managedNames = managedCategories.map(c => c.name);
+
+    const allCategories = [
+      ...managedCategories.map(c => ({ ...c.toObject(), source: 'local' })),
+      ...merged.filter(c => !managedNames.includes(c.name))
+    ];
+
+    const seen = new Set();
+    const deduped = allCategories.filter(c => {
+      if (seen.has(c.name)) return false;
+      seen.add(c.name);
+      return true;
+    });
+
+    cache.set('categories', deduped, 60000);
+    res.json(deduped);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

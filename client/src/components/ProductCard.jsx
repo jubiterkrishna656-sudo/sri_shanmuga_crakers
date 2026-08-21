@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiShoppingCart, HiStar, HiFire, HiSparkles, HiArrowRight } from 'react-icons/hi';
+import { HiShoppingCart, HiStar, HiFire, HiSparkles, HiChevronRight, HiTag } from 'react-icons/hi';
 import { useCart } from '../context/CartContext';
 
 export default function ProductCard({ product, index = 0, delay = 0 }) {
@@ -16,16 +16,16 @@ export default function ProductCard({ product, index = 0, delay = 0 }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ delay: delay || (index % 4) * 0.06 }}
-      whileHover={{ y: -6 }}
-      className="card overflow-hidden group"
+      whileHover={{ y: -5 }}
+      className="bg-white rounded-2xl overflow-hidden group border border-gray-200 hover:border-yellow-400 hover:shadow-2xl hover:shadow-yellow-500/10 transition-all duration-300"
     >
       <Link to={`/products/${product._id}`} className="block h-full">
-        <div className="relative h-44 sm:h-48 bg-gradient-to-br from-yellow-100 via-amber-50 to-yellow-50 flex items-center justify-center overflow-hidden">
+        <div className="relative h-40 sm:h-44 bg-gradient-to-br from-gray-50 via-white to-gray-100 flex items-center justify-center overflow-hidden">
           {product.image || product.imageUrl ? (
-            <img src={product.image || product.imageUrl} alt={product.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+            <img src={product.image || product.imageUrl} alt={product.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
             <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}>
-              <HiSparkles className="text-6xl text-yellow-300" />
+              <HiSparkles className="text-5xl text-yellow-400" />
             </motion.div>
           )}
           {product.discountPrice > 0 && (
@@ -34,75 +34,94 @@ export default function ProductCard({ product, index = 0, delay = 0 }) {
               whileInView={{ scale: 1, rotate: 0 }}
               viewport={{ once: true }}
               transition={{ type: 'spring', stiffness: 300, damping: 15, delay: (index % 4) * 0.06 }}
-              className="absolute top-3 left-3"
+              className="absolute top-2.5 left-2.5"
             >
               <motion.span
-                animate={{ scale: [1, 1.08, 1] }}
-                transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
-                className="inline-flex items-center gap-1 bg-white text-slate-900 text-xs px-3 py-1.5 rounded-full font-bold shadow-lg ring-1 ring-black/10"
+                animate={{ boxShadow: ['0 0 0px 0px rgba(0,0,0,0.8)', '0 0 12px 3px rgba(250,204,21,0.7)', '0 0 0px 0px rgba(0,0,0,0.8)'] }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                className="inline-flex items-center gap-0.5 bg-black text-white text-[10px] px-2.5 py-1 rounded-lg font-black border border-white/30"
               >
-                <HiFire className="text-xs text-slate-900" />
+                <motion.span
+                  animate={{ opacity: [1, 0.3, 1] }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}
+                  className="text-yellow-400 text-[10px]"
+                >⚡</motion.span>
                 {Math.round((1 - product.discountPrice / product.price) * 100)}% OFF
               </motion.span>
             </motion.span>
           )}
           {product.featured && (
-            <span className="absolute top-3 right-3 chip bg-gradient-to-r from-yellow-400 to-amber-400 text-slate-900 shadow-lg">
-              <HiFire className="text-xs" /> HOT
+            <span className="absolute top-2.5 right-2.5 bg-gradient-to-r from-yellow-400 to-amber-400 text-black text-[10px] px-2 py-1 rounded-lg font-black shadow-lg flex items-center gap-0.5">
+              <HiFire className="text-[10px]" /> HOT
             </span>
           )}
           {product.stock <= 0 && (
-            <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
-              <span className="text-xs font-black text-red-600 bg-white/90 px-4 py-2 rounded-full shadow-lg">OUT OF STOCK</span>
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] flex items-center justify-center">
+              <span className="text-[11px] font-black text-white bg-black px-4 py-2 rounded-xl shadow-lg">OUT OF STOCK</span>
             </div>
           )}
         </div>
-        <div className="p-4">
+        <div className="p-3.5">
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-yellow-600">{product.category}</p>
+            <span className="text-[10px] font-black uppercase tracking-wider text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md">{product.category}</span>
             <div className="flex items-center gap-0.5">
-              <HiStar className={`text-xs ${product.reviewCount > 0 ? 'text-amber-400' : 'text-red-500'}`} />
-              <span className={`text-[10px] font-semibold ${product.reviewCount > 0 ? 'text-gray-400' : 'text-red-500 font-black'}`}>
-                {product.reviewCount > 0 ? `${product.avgRating ?? 0} (${product.reviewCount})` : 'New'}
-              </span>
+              {product.reviewCount > 0 ? (
+                <>
+                  <HiStar className="text-[10px] text-yellow-400" />
+                  <span className="text-[10px] font-bold text-gray-400">{product.avgRating ?? 0}</span>
+                </>
+              ) : (
+                <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-md">New</span>
+              )}
             </div>
           </div>
-          <h3 className="font-bold text-gray-800 mb-2 truncate group-hover:text-yellow-600 transition-colors">{product.name}</h3>
-          <div className="flex items-center justify-between">
+          <h3 className="font-black text-gray-900 text-sm mb-2 truncate group-hover:text-yellow-600 transition-colors leading-snug">{product.name}</h3>
+          <div className="flex items-end justify-between">
             <div>
               {product.discountPrice > 0 ? (
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-lg font-black text-slate-900">₹{product.discountPrice}</span>
-                  <span className="text-xs text-gray-400 line-through">₹{product.price}</span>
+                  <span className="text-base font-black text-gray-900">Rs. {product.discountPrice}</span>
+                  <span className="text-[10px] text-gray-400 line-through">Rs. {product.price}</span>
                 </div>
               ) : (
-                <span className="text-lg font-black text-slate-900">₹{product.price}</span>
+                <span className="text-base font-black text-gray-900">Rs. {product.price}</span>
+              )}
+              {product.discountPrice > 0 && (
+                <p className="text-[10px] font-black flex items-center gap-0.5 mt-0.5 bg-gray-900 text-yellow-400 px-2 py-0.5 rounded-md w-fit">
+                  <HiTag className="text-[10px]" /> Save Rs. {product.price - product.discountPrice}
+                </p>
               )}
             </div>
             <motion.button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdd(); }}
               disabled={product.stock <= 0}
               whileTap={{ scale: 0.85 }}
-              className={`p-2.5 rounded-2xl transition-all duration-300 ${
+              className={`p-2 rounded-xl transition-all duration-200 ${
                 product.stock > 0
-                  ? 'bg-white text-slate-900 shadow-md ring-1 ring-black/10 hover:shadow-lg hover:-translate-y-0.5'
+                  ? 'bg-black text-white shadow-lg hover:bg-gray-800 hover:-translate-y-0.5'
                   : 'bg-gray-100 text-gray-300 cursor-not-allowed'
               }`}
             >
-              <HiShoppingCart className="text-lg" />
+              <HiShoppingCart className="text-sm" />
             </motion.button>
           </div>
           {product.stock > 0 && product.stock <= 5 && (
             <motion.p
-              animate={{ opacity: [1, 0.25, 1], color: ['#ef4444', '#dc2626', '#ef4444'] }}
-              transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
-              className="text-[11px] font-black mt-2 flex items-center gap-1"
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
+              className="text-[10px] font-black mt-2 flex items-center gap-1 text-red-500"
             >
-              <HiFire className="text-xs text-red-500" /> Hurry! Only {product.stock} left
+              <HiFire className="text-[10px]" /> Only {product.stock} left!
             </motion.p>
           )}
-          <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-center gap-1 text-[11px] font-black uppercase tracking-wider text-yellow-600 group-hover:text-yellow-700 transition-colors">
-            View Product <HiArrowRight className="text-xs transition-transform group-hover:translate-x-1" />
+          <div className="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-wider text-gray-600">View details</span>
+            <motion.span
+              className="w-6 h-6 rounded-full bg-yellow-400 flex items-center justify-center shadow-md shadow-yellow-400/30 group-hover:shadow-yellow-400/50 group-hover:bg-yellow-500 transition-all"
+              whileHover={{ scale: 1.15 }}
+            >
+              <HiChevronRight className="text-[11px] text-black" />
+            </motion.span>
           </div>
         </div>
       </Link>

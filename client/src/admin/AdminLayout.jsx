@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { HiMenu, HiX, HiHome, HiCube, HiShoppingBag, HiBell, HiDocumentReport, HiExternalLink, HiClock, HiLogout } from 'react-icons/hi';
+import { HiMenu, HiX, HiHome, HiCube, HiShoppingBag, HiBell, HiDocumentReport, HiExternalLink, HiClock, HiLogout, HiTag } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { adminApi } from '../utils/adminApi';
 
 const sidebarLinks = [
   { to: '/admin', icon: HiHome, label: 'Dashboard' },
   { to: '/admin/products', icon: HiCube, label: 'Products' },
+  { to: '/admin/categories', icon: HiTag, label: 'Categories' },
   { to: '/admin/orders', icon: HiShoppingBag, label: 'Orders' },
   { to: '/admin/reports', icon: HiDocumentReport, label: 'Reports' },
 ];
@@ -215,6 +216,7 @@ export default function AdminLayout() {
   const pageMap = {
     dashboard: { color: 'from-emerald-400 to-teal-500' },
     products: { color: 'from-sky-400 to-blue-500' },
+    categories: { color: 'from-amber-400 to-orange-500' },
     orders: { color: 'from-violet-400 to-purple-500' },
     reports: { color: 'from-cyan-400 to-teal-500' },
   };

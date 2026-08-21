@@ -62,12 +62,16 @@ const authLimiter = rateLimit({
 
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log('MongoDB error:', err));
+  .catch(err => {
+    console.error('MongoDB connection failed:', err.message);
+    process.exit(1);
+  });
 
 app.use('/api/auth', authLimiter, require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/api/categories', require('./routes/categories'));
 
 const clientBuild = path.join(__dirname, '../client/dist');
 app.use('/assets', express.static(path.join(clientBuild, 'assets'), { maxAge: '365d', immutable: true }));

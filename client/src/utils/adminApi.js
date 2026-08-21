@@ -26,9 +26,15 @@ export const adminApi = {
   getProfile: () => AdminAPI.get('/auth/profile'),
   getAllOrders: () => AdminAPI.get('/orders/all'),
   updateOrderStatus: (id, data) => AdminAPI.put(`/orders/status/${id}`, data),
+  getAllProducts: (params) => AdminAPI.get('/products', { params }),
   createProduct: (data) => AdminAPI.post('/products', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   updateProduct: (id, data) => AdminAPI.put(`/products/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   deleteProduct: (id) => AdminAPI.delete(`/products/${id}`),
+  deleteOrder: (id) => AdminAPI.delete(`/orders/${id}`),
+  getCategories: () => AdminAPI.get('/categories'),
+  createCategory: (data) => AdminAPI.post('/categories', data),
+  updateCategory: (id, data) => AdminAPI.put(`/categories/${id}`, data),
+  deleteCategory: (id) => AdminAPI.delete(`/categories/${id}`),
 };
 
 export default AdminAPI;

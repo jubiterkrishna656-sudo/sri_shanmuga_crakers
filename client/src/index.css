@@ -92,3 +92,31 @@
 .animate-particle { animation: particle 1.2s ease-out forwards; }
 .animate-glow { animation: glow 2s ease-in-out infinite; }
 .animate-shimmer { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); background-size: 200% 100%; animation: shimmer 2s infinite; }
+
+@keyframes rocketUp {
+  0% { height: 0; bottom: 0; opacity: 1; }
+  40% { height: 80px; opacity: 1; }
+  70% { height: 80px; opacity: 0.8; }
+  100% { height: 0; bottom: 100%; opacity: 0; }
+}
+@keyframes burstParticle {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  50% { opacity: 1; }
+  100% { transform: translate(var(--bx), var(--by)) scale(0); opacity: 0; }
+}
+.animate-rocket-up { animation: rocketUp 2s ease-out infinite; }
+.animate-burst-particle { animation: burstParticle 2s ease-out infinite; }
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes glowBlink {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 8px rgba(250,204,21,0.4)) brightness(1); }
+  50% { opacity: 0.85; filter: drop-shadow(0 0 16px rgba(251,146,60,0.7)) brightness(1.2); }
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}

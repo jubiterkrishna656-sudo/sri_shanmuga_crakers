@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 
 const User = require('./models/User');
 const Product = require('./models/Product');
+const Category = require('./models/Category');
 
 const products = [
   { productNumber: '001', name: 'Lakshmi Special Sparklers (100g)', category: 'Sparklers', price: 150, stock: 200, featured: true, description: 'Classic Lakshmi sparklers packed for the whole festival season. Bright golden sparks with a satisfying crackle.' },
@@ -69,12 +70,33 @@ async function seedProducts() {
   console.log(`Seeded ${products.length} products`);
 }
 
+const defaultCategories = [
+  { name: 'Sparklers', emoji: '🎆', color: 'from-yellow-400 to-orange-500', order: 1 },
+  { name: 'Flower Pots', emoji: '🎇', color: 'from-pink-400 to-rose-500', order: 2 },
+  { name: 'Rockets', emoji: '🚀', color: 'from-blue-400 to-indigo-500', order: 3 },
+  { name: 'Bombs', emoji: '💥', color: 'from-red-500 to-rose-600', order: 4 },
+  { name: 'Gift Boxes', emoji: '🎁', color: 'from-green-400 to-emerald-500', order: 5 },
+  { name: 'Kids Crackers', emoji: '🧨', color: 'from-cyan-400 to-sky-500', order: 6 },
+  { name: 'Combo Packs', emoji: '📦', color: 'from-purple-400 to-violet-500', order: 7 }
+];
+
+async function seedCategories() {
+  const count = await Category.countDocuments();
+  if (count > 0) {
+    console.log(`Categories already exist (${count}). Skipping category seeding.`);
+    return;
+  }
+  await Category.insertMany(defaultCategories);
+  console.log(`Seeded ${defaultCategories.length} categories`);
+}
+
 async function seed() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('MongoDB connected');
 
     await seedAdmin();
+    await seedCategories();
     await seedProducts();
 
     await mongoose.disconnect();

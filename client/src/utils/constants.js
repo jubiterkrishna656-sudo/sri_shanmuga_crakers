@@ -7,5 +7,6 @@ export const SHOP_CONTACT = {
   gpayName: 'Ganesan',
   phone: '+91 79049 68103',
   phoneRaw: '7904968103',
-  email: 'info@shanmugacrackers.com'
+  email: 'shanmugacrackers26@gmail.com',
+  address: '2/223 Vembakottai, near Vembakottai EB Office, Sivakasi, Tamil Nadu'
 };

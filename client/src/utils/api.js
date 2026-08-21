@@ -12,6 +12,13 @@ export const productAPI = {
   getCategories: () => API.get('/products/categories'),
 };
 
+export const categoryAPI = {
+  getAll: () => API.get('/categories'),
+  create: (data) => API.post('/categories', data),
+  update: (id, data) => API.put(`/categories/${id}`, data),
+  delete: (id) => API.delete(`/categories/${id}`),
+};
+
 export const reviewAPI = {
   getByProduct: (id) => API.get(`/products/${id}/reviews`),
   add: (id, data) => API.post(`/products/${id}/reviews`, data),
