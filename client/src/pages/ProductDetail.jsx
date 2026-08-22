@@ -161,7 +161,7 @@ export default function ProductDetail() {
                 {product.discountPrice > 0 ? (
                   <>
                     <span className="text-3xl md:text-4xl font-black text-gray-900">Rs. {product.discountPrice}</span>
-                    <span className="text-lg text-gray-400 line-through font-bold">Rs. {product.price}</span>
+                    <span className="text-base font-bold text-red-400 line-through">Rs. {product.price}</span>
                     <span className="inline-flex items-center gap-1 bg-yellow-400 text-black px-3 py-1 rounded-lg text-xs font-black">
                       Save Rs. {save}
                     </span>

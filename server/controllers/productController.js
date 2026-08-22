@@ -144,10 +144,15 @@ exports.getProduct = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, category, price, discountPrice, stock, description, imageUrl, videoUrl, productNumber } = req.body;
+    const { name, category, price, discountPrice, stock, description, imageUrl, videoUrl, productNumber, featured } = req.body;
     const image = req.file ? `/uploads/${req.file.filename}` : '';
     const num = productNumber || await getNextProductNumber();
-    const product = await Product.create({ productNumber: num, name, category, image, imageUrl, videoUrl, price, discountPrice, stock, description });
+    const product = await Product.create({
+      productNumber: num, name, category, image, imageUrl, videoUrl,
+      price: Number(price), discountPrice: Number(discountPrice) || 0,
+      stock: Number(stock) || 0, description,
+      featured: featured === true || featured === 'true'
+    });
     cache.del('products:');
     cache.del('categories');
 
@@ -159,17 +164,18 @@ exports.createProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
   try {
-    const { name, category, price, discountPrice, stock, description, imageUrl, videoUrl, productNumber } = req.body;
+    const { name, category, price, discountPrice, stock, description, imageUrl, videoUrl, productNumber, featured } = req.body;
     const update = {};
     if (name !== undefined) update.name = name;
     if (category !== undefined) update.category = category;
-    if (price !== undefined) update.price = price;
-    if (discountPrice !== undefined) update.discountPrice = discountPrice;
-    if (stock !== undefined) update.stock = stock;
+    if (price !== undefined) update.price = Number(price);
+    if (discountPrice !== undefined) update.discountPrice = Number(discountPrice) || 0;
+    if (stock !== undefined) update.stock = Number(stock) || 0;
     if (description !== undefined) update.description = description;
     if (imageUrl !== undefined) update.imageUrl = imageUrl;
     if (videoUrl !== undefined) update.videoUrl = videoUrl;
     if (productNumber !== undefined) update.productNumber = productNumber;
+    if (featured !== undefined) update.featured = featured === true || featured === 'true';
     if (req.file) {
       const old = await Product.findById(req.params.id);
       if (old?.image) {

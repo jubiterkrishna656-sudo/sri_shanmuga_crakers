@@ -81,7 +81,7 @@ export default function ProductCard({ product, index = 0, delay = 0 }) {
               {product.discountPrice > 0 ? (
                 <div className="flex items-baseline gap-1.5">
                   <span className="text-base font-black text-gray-900">Rs. {product.discountPrice}</span>
-                  <span className="text-[10px] text-gray-400 line-through">Rs. {product.price}</span>
+                  <span className="text-[11px] font-bold text-red-400 line-through">Rs. {product.price}</span>
                 </div>
               ) : (
                 <span className="text-base font-black text-gray-900">Rs. {product.price}</span>

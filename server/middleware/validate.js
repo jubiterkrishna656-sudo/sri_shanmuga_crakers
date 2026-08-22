@@ -17,30 +17,34 @@ const adminLoginRules = [
 const productRules = [
   body('name').trim().notEmpty().withMessage('Product name is required'),
   body('category').trim().notEmpty().withMessage('Category is required'),
-  body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
-  body('discountPrice').optional().isFloat({ min: 0 }).withMessage('Discount price must be a positive number')
+  body('price').exists({ checkFalsy: true }).withMessage('Price is required').customSanitizer(val => Number(val)).isFloat({ min: 0.01 }).withMessage('Price must be a positive number'),
+  body('discountPrice').optional({ values: 'falsy' }).customSanitizer(val => Number(val)).isFloat({ min: 0 }).withMessage('Discount price must be a positive number')
     .custom((val, { req }) => {
-      if (val && req.body.price && val >= req.body.price) {
+      const price = Number(req.body.price);
+      if (val && price && val >= price) {
         throw new Error('Discount price must be less than the original price');
       }
       return true;
     }),
-  body('stock').optional().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+  body('stock').optional({ values: 'falsy' }).customSanitizer(val => Number(val)).isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+  body('featured').customSanitizer(val => val === 'true' || val === true),
   handleValidation
 ];
 
 const productUpdateRules = [
   body('name').optional().trim().notEmpty().withMessage('Product name is required'),
   body('category').optional().trim().notEmpty().withMessage('Category is required'),
-  body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a positive number'),
-  body('discountPrice').optional().isFloat({ min: 0 }).withMessage('Discount price must be a positive number')
+  body('price').optional().customSanitizer(val => Number(val)).isFloat({ min: 0.01 }).withMessage('Price must be a positive number'),
+  body('discountPrice').optional({ values: 'falsy' }).customSanitizer(val => Number(val)).isFloat({ min: 0 }).withMessage('Discount price must be a positive number')
     .custom((val, { req }) => {
-      if (val && req.body.price && val >= req.body.price) {
+      const price = Number(req.body.price);
+      if (val && price && val >= price) {
         throw new Error('Discount price must be less than the original price');
       }
       return true;
     }),
-  body('stock').optional().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+  body('stock').optional({ values: 'falsy' }).customSanitizer(val => Number(val)).isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
+  body('featured').customSanitizer(val => val === 'true' || val === true),
   handleValidation
 ];
 

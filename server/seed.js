@@ -97,7 +97,12 @@ async function seed() {
 
     await seedAdmin();
     await seedCategories();
-    await seedProducts();
+
+    if (process.env.NODE_ENV !== 'production') {
+      await seedProducts();
+    } else {
+      console.log('Production mode — skipping test product seeding');
+    }
 
     await mongoose.disconnect();
     console.log('Seed complete');

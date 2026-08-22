@@ -9,6 +9,10 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
+    "seed": "cd server && npm run seed",
+    "cleanup": "cd server && npm run cleanup",
+    "deploy:setup": "npm run build && NODE_ENV=production npm run seed",
+    "deploy:fresh": "npm run cleanup && npm run build && NODE_ENV=production npm run seed",
     "test": "concurrently \"npm run test:server\" \"npm run test:client\"",
     "test:server": "cd server && npm test",
     "test:client": "cd client && npm test"
